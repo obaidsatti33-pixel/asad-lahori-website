@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 function Checkout({
   cart,
@@ -10,52 +10,22 @@ function Checkout({
   onOrderComplete,
   restaurantSettings,
 }) {
-  const [orderPlaced, setOrderPlaced] =
-    useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
 
   const [completedOrderTotal, setCompletedOrderTotal] =
     useState(0);
 
-  const [isSubmitting, setIsSubmitting] =
-    useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [orderError, setOrderError] =
-    useState("");
-
-  const [orderType, setOrderType] =
-    useState("Delivery");
-
-  // =========================
-  // AVAILABLE ORDER TYPES
-  // =========================
-
- const deliveryEnabled = true;
-const pickupEnabled = true;
-
-  // =========================
-  // SET DEFAULT ORDER TYPE
-  // =========================
-
-  useEffect(() => {
-    if (deliveryEnabled) {
-      setOrderType("Delivery");
-    } else if (pickupEnabled) {
-      setOrderType("Pickup");
-    }
-  }, [
-    deliveryEnabled,
-    pickupEnabled,
-  ]);
+  const [orderError, setOrderError] = useState("");
 
   // =========================
   // WHATSAPP NUMBER
   // =========================
 
   const whatsappNumber =
-    restaurantSettings?.phone?.replace(
-      /\D/g,
-      ""
-    ) || "923235162155";
+    restaurantSettings?.phone?.replace(/\D/g, "") ||
+    "923235162155";
 
   // =========================
   // RESTAURANT NAME
@@ -86,58 +56,19 @@ const pickupEnabled = true;
 
     setOrderError("");
 
-    // =========================
-    // CHECK ORDER TYPE
-    // =========================
-
-    if (
-      !deliveryEnabled &&
-      !pickupEnabled
-    ) {
-      setOrderError(
-        "Online ordering is currently unavailable."
-      );
-      return;
-    }
-
-    if (
-      orderType === "Delivery" &&
-      !deliveryEnabled
-    ) {
-      setOrderError(
-        "Delivery is currently unavailable."
-      );
-      return;
-    }
-
-    if (
-      orderType === "Pickup" &&
-      !pickupEnabled
-    ) {
-      setOrderError(
-        "Pickup is currently unavailable."
-      );
-      return;
-    }
-
-    const formData = new FormData(
-      e.currentTarget
-    );
+    const formData = new FormData(e.currentTarget);
 
     const customer = {
-      name:
-        formData.get("name")?.trim() || "",
+      name: formData.get("name")?.trim() || "",
 
-      phone:
-        formData.get("phone")?.trim() || "",
+      phone: formData.get("phone")?.trim() || "",
 
-      address:
-        formData.get("address")?.trim() || "",
+      address: formData.get("address")?.trim() || "",
 
-      notes:
-        formData.get("notes")?.trim() || "",
+      notes: formData.get("notes")?.trim() || "",
 
-      orderType,
+      // Keep backend compatibility
+      orderType: "Delivery",
     };
 
     // =========================
@@ -145,24 +76,16 @@ const pickupEnabled = true;
     // =========================
 
     if (!customer.name) {
-      setOrderError(
-        "Please enter your full name."
-      );
+      setOrderError("Please enter your full name.");
       return;
     }
 
     if (!customer.phone) {
-      setOrderError(
-        "Please enter your phone number."
-      );
+      setOrderError("Please enter your phone number.");
       return;
     }
 
-    // Address required only for delivery
-    if (
-      orderType === "Delivery" &&
-      !customer.address
-    ) {
+    if (!customer.address) {
       setOrderError(
         "Please enter your delivery address."
       );
@@ -177,9 +100,7 @@ const pickupEnabled = true;
     }
 
     if (!cart || cart.length === 0) {
-      setOrderError(
-        "Your cart is empty."
-      );
+      setOrderError("Your cart is empty.");
       return;
     }
 
@@ -187,12 +108,9 @@ const pickupEnabled = true;
     // SAVE TOTAL
     // =========================
 
-    const totalAtSubmission =
-      cartTotal;
+    const totalAtSubmission = cartTotal;
 
-    setCompletedOrderTotal(
-      totalAtSubmission
-    );
+    setCompletedOrderTotal(totalAtSubmission);
 
     setIsSubmitting(true);
 
@@ -201,15 +119,9 @@ const pickupEnabled = true;
       // SEND TO BACKEND
       // =========================
 
-      const result =
-        await onOrderComplete(
-          customer
-        );
+      const result = await onOrderComplete(customer);
 
-      console.log(
-        "Order completed:",
-        result
-      );
+      console.log("Order completed:", result);
 
       // =========================
       // SHOW SUCCESS
@@ -217,10 +129,7 @@ const pickupEnabled = true;
 
       setOrderPlaced(true);
     } catch (error) {
-      console.error(
-        "Checkout error:",
-        error
-      );
+      console.error("Checkout error:", error);
 
       setOrderError(
         error.message ||
@@ -303,8 +212,8 @@ const pickupEnabled = true;
               </h2>
 
               <p>
-                Please enter your details so we
-                can prepare your order.
+                Please enter your details so we can
+                prepare your order.
               </p>
 
             </div>
@@ -321,109 +230,8 @@ const pickupEnabled = true;
               >
 
                 {/* =========================
-                    ORDER TYPE
+                    NAME
                 ========================= */}
-
-                <div className="checkout-field">
-
-                  <label>
-                    Order Type{" "}
-                    <span>*</span>
-                  </label>
-
-                  <div className="checkout-order-types">
-
-                    {deliveryEnabled && (
-                      <label
-                        className={`checkout-order-type ${
-                          orderType === "Delivery"
-                            ? "active"
-                            : ""
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="orderType"
-                          value="Delivery"
-                          checked={
-                            orderType ===
-                            "Delivery"
-                          }
-                          onChange={(e) =>
-                            setOrderType(
-                              e.target.value
-                            )
-                          }
-                          disabled={
-                            isSubmitting
-                          }
-                        />
-
-                        <span className="checkout-order-type-icon">
-                          🚚
-                        </span>
-
-                        <span>
-                          <strong>
-                            Delivery
-                          </strong>
-
-                          <small>
-                            Delivered to your address
-                          </small>
-                        </span>
-
-                      </label>
-                    )}
-
-                    {pickupEnabled && (
-                      <label
-                        className={`checkout-order-type ${
-                          orderType === "Pickup"
-                            ? "active"
-                            : ""
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="orderType"
-                          value="Pickup"
-                          checked={
-                            orderType ===
-                            "Pickup"
-                          }
-                          onChange={(e) =>
-                            setOrderType(
-                              e.target.value
-                            )
-                          }
-                          disabled={
-                            isSubmitting
-                          }
-                        />
-
-                        <span className="checkout-order-type-icon">
-                          🏪
-                        </span>
-
-                        <span>
-                          <strong>
-                            Pickup
-                          </strong>
-
-                          <small>
-                            Collect from restaurant
-                          </small>
-                        </span>
-
-                      </label>
-                    )}
-
-                  </div>
-
-                </div>
-
-                {/* NAME */}
 
                 <div className="checkout-field">
 
@@ -443,7 +251,9 @@ const pickupEnabled = true;
 
                 </div>
 
-                {/* PHONE */}
+                {/* =========================
+                    PHONE
+                ========================= */}
 
                 <div className="checkout-field">
 
@@ -466,57 +276,31 @@ const pickupEnabled = true;
 
                 </div>
 
-                {/* ADDRESS */}
+                {/* =========================
+                    ADDRESS
+                ========================= */}
 
-                {orderType ===
-                  "Delivery" && (
-                  <div className="checkout-field">
+                <div className="checkout-field">
 
-                    <label>
-                      Delivery Address{" "}
-                      <span>*</span>
-                    </label>
+                  <label>
+                    Delivery Address{" "}
+                    <span>*</span>
+                  </label>
 
-                    <textarea
-                      name="address"
-                      rows="4"
-                      placeholder="Enter your complete delivery address"
-                      autoComplete="street-address"
-                      disabled={
-                        isSubmitting
-                      }
-                      required
-                    ></textarea>
+                  <textarea
+                    name="address"
+                    rows="4"
+                    placeholder="Enter your complete delivery address"
+                    autoComplete="street-address"
+                    disabled={isSubmitting}
+                    required
+                  ></textarea>
 
-                  </div>
-                )}
+                </div>
 
-                {/* PICKUP MESSAGE */}
-
-                {orderType ===
-                  "Pickup" && (
-                  <div className="checkout-pickup-note">
-
-                    <span>
-                      🏪
-                    </span>
-
-                    <div>
-                      <strong>
-                        Restaurant Pickup
-                      </strong>
-
-                      <p>
-                        Your order will be prepared
-                        for collection at{" "}
-                        {restaurantName}.
-                      </p>
-                    </div>
-
-                  </div>
-                )}
-
-                {/* NOTES */}
+                {/* =========================
+                    NOTES
+                ========================= */}
 
                 <div className="checkout-field">
 
@@ -537,7 +321,9 @@ const pickupEnabled = true;
 
                 </div>
 
-                {/* ERROR */}
+                {/* =========================
+                    ERROR
+                ========================= */}
 
                 {orderError && (
                   <div className="checkout-error">
@@ -553,16 +339,16 @@ const pickupEnabled = true;
                   </div>
                 )}
 
-                {/* ACTION BUTTONS */}
+                {/* =========================
+                    ACTION BUTTONS
+                ========================= */}
 
                 <div className="checkout-actions">
 
                   <button
                     type="button"
                     className="checkout-back"
-                    onClick={
-                      handleBackToCart
-                    }
+                    onClick={handleBackToCart}
                     disabled={isSubmitting}
                   >
                     ← Back to Cart
@@ -571,11 +357,7 @@ const pickupEnabled = true;
                   <button
                     type="submit"
                     className="checkout-submit"
-                    disabled={
-                      isSubmitting ||
-                      (!deliveryEnabled &&
-                        !pickupEnabled)
-                    }
+                    disabled={isSubmitting}
                   >
 
                     {isSubmitting ? (
@@ -587,6 +369,7 @@ const pickupEnabled = true;
                     ) : (
                       <>
                         Place Order
+
                         <span>
                           →
                         </span>
@@ -629,8 +412,7 @@ const pickupEnabled = true;
 
                         <div className="checkout-item-meta">
 
-                          {item.size !==
-                            "1 عدد" &&
+                          {item.size !== "1 عدد" &&
                             item.size && (
                               <span className="checkout-item-size">
                                 {item.size}
@@ -648,8 +430,7 @@ const pickupEnabled = true;
 
                       <strong className="checkout-item-price">
                         Rs.{" "}
-                        {item.price *
-                          item.quantity}
+                        {item.price * item.quantity}
                       </strong>
 
                     </div>
@@ -718,9 +499,8 @@ const pickupEnabled = true;
             </h2>
 
             <p>
-              We have received your order
-              details. Our team will contact
-              you shortly.
+              We have received your order details.
+              Our team will contact you shortly.
             </p>
 
             <div className="success-total">
@@ -742,6 +522,7 @@ const pickupEnabled = true;
                 onClick={handleClose}
               >
                 Back to Website
+
                 <span>
                   →
                 </span>
@@ -771,4 +552,3 @@ const pickupEnabled = true;
 }
 
 export default Checkout;
-
